@@ -69,6 +69,7 @@ subdataFeatNames <- dataFeatNames$V2[grep('mean\\(\\)|std\\(\\)', dataFeatNames$
 selNames <- c(as.character(subdataFeatNames), "subject", "activity")
 data <- subset(data, select= selNames)
 
+
 ### PART 3. Uses descriptive activity names to name the activities in the data set
 
 # Get the descriptive activity names
@@ -77,9 +78,12 @@ actLabels <- read.table(file.path(dataPath, "activity_labels.txt"), header= FALS
 # add descriptive names to the activity variable 
 data$activity <- factor(data$activity, levels=actLabels$V1, labels= actLabels$V2)
 
+
 ### PART 4. Appropriately labels the data set with descriptive variable names.
 
 # Adjust the columns to be more easily readable.  (time, frequency, magnitude, accelerometer, gyroscope and body)
+names(data) <- gsub("std()", "STD", names(data))
+names(data) <- gsub("mean()", "MEAN", names(data))
 names(data) <- gsub("^t", "time", names(data))
 names(data) <- gsub("^f", "frequency", names(data))
 names(data) <- gsub("Mag", "Magnitude", names(data))
@@ -88,3 +92,10 @@ names(data) <- gsub("Gyro", "Gyroscope", names(data))
 names(data) <- gsub("BodyBody", "Body", names(data))
 
 
+### PART 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+
+# Use the plyr library to create a second data set
+library(plyr)
+data2 <- aggregate(. ~subject + activity, data, mean)
+data2 <- data2[order(data2$subject,data2$activity),]
+write.table(data2, file= "tidydata.txt", sep=",", row.names= FALSE)
